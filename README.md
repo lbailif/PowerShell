@@ -7,7 +7,7 @@ This script was inspired by some work done by Jason Fossen, so, I have to give s
 I created this script to do some threat hunting with long tail analysis on common registry run keys.  Here's a breakdown of what the script does
 - Pulls a list of windows computers from your domain  
   -  Alternatively, you may specify an OU to use by modifying the $Searcher variable
-  -  example: $Searcher = New-Object DirectoryServices.DirectorySearcher([ADSI]"LDAP://OU=computers,DC=ipers,DC=local")
+  -  example: $Searcher = New-Object DirectoryServices.DirectorySearcher([ADSI]"LDAP://OU=computers,DC=domain,DC=local")
 - creates a folder on the C drive called All_Reg_Run_Keys
 - It loops through the array of computers and remotely gathers all listed Run keys
   HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
