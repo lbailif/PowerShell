@@ -36,7 +36,6 @@ If (Test-Connection -BufferSize 32 -Count 1 -ComputerName $Name -Quiet) {
   reg query \\$Name\HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run | out-file -append C:\All_Reg_RunKeys\RegKeys.txt
   reg query \\$Name\HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx | out-file -append C:\All_Reg_RunKeys\RegKeys.txt
   reg query \\$Name\HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce | out-file -append C:\All_Reg_RunKeys\RegKeys.txt
-  reg query \\$Name\HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options | out-file -append C:\All_Reg_RunKeys\RegKeys.txt
   reg query \\$Name\HKLM\SOFTWARE\Wow6432node\Microsoft\Windows\CurrentVersion\Run | out-file -append C:\All_Reg_RunKeys\RegKeys.txt
   reg query \\$Name\HKLM\SOFTWARE\Wow6432node\Microsoft\Windows\CurrentVersion\RunOnce | out-file -append C:\All_Reg_RunKeys\RegKeys.txt
     # Query the HKU to get a list of SID's to pull the reg keys from
@@ -61,16 +60,16 @@ $whitelist = "nameofkey","replacethese"
 
 # Initialize the $count HashTable (associative array)
 $count=@{} 
-# Read file, find lines with �REG_SZ' and REG_EXPAND_SZ
+# Read file, find lines with ’REG_SZ' and REG_EXPAND_SZ
 $keynames=Get-Content C:\All_Reg_RunKeys\RegKeys.txt|select-string "REG_SZ","REG_EXPAND_SZ"
 # Iterate through $keynames one key at a time
 foreach ( $key in $keynames ) {
-  # Remove "REG_SZ� and "REG_EXPAND_SZ" to the end of the line. 
+  # Remove "REG_SZ“ and "REG_EXPAND_SZ" to the end of the line. 
   $key=$key -replace " *REG_SZ.*", ""
   $key=$key -replace " *REG_EXPAND_SZ.*", ""
   # Remove extra spaces
   $key=$key.trim()
-  # If it’s not whitelisted
+  # If itâ€™s not whitelisted
   if (-not ($whitelist -contains $key)){
     # Increment count for that key by 1
     $count[$key]++ 
@@ -88,11 +87,11 @@ $HKUwhitelist = "Sidebar"
 
 # Initialize the $count HashTable (associative array)
 $HKUcount=@{} 
-# Read file, find lines with ÒREG_EXPAND_SZÓ
+# Read file, find lines with Ã’REG_EXPAND_SZÃ“
 $HKUkeynames=Get-Content C:\All_Reg_RunKeys\UserRegKeys.txt|select-string "REG_SZ","REG_EXPAND_SZ"
 # Iterate through $keynames one key at a time
 foreach ( $HKUkey in $HKUkeynames ) {
-  # Remove "REG_SZ� and "REG_EXPAND_SZ" to the end of the line.
+  # Remove "REG_SZ“ and "REG_EXPAND_SZ" to the end of the line.
   $key=$key -replace " *REG_SZ.*", ""
   $HKUkey=$HKUkey -replace " *REG_EXPAND_SZ.*", ""
   # Remove extra spaces
