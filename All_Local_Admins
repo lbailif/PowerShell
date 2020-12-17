@@ -1,0 +1,61 @@
+# THIS SCRIPT IS PROVIDED "AS IS" WITH NO WARRANTIES OR GUARANTEES OF ANY
+# KIND, INCLUDING BUT NOT LIMITED TO MERCHANTABILITY AND/OR FITNESS FOR A
+# PARTICULAR PURPOSE. ALL RISKS OF DAMAGE REMAINS WITH THE USER, EVEN IF THE
+# AUTHOR, SUPPLIER OR DISTRIBUTOR HAS BEEN ADVISED OF THE POSSIBILITY OF ANY
+# SUCH DAMAGE. IF YOUR STATE DOES NOT PERMIT THE COMPLETE LIMITATION OF
+# LIABILITY, THEN DO NOT DOWNLOAD OR USE THE SCRIPT. NO TECHNICAL SUPPORT
+# WILL BE PROVIDED.
+#
+# Get list of all windows computers from directory services and add to array
+$Searcher = New-Object DirectoryServices.DirectorySearcher([ADSI]"LDAP://OU=OUname,DC=domain,DC=local")  #Update the OU and this will generate your list of endpoints.
+$Searcher.Filter = "(&(objectClass=computer)(operatingSystem=*Windows*))"
+$Computers = ($Searcher.Findall())
+#create directory to place the files in. 
+if((Test-Path "C:\All_Local_Admins") -eq 0) {
+  md C:\All_Local_Admins
+}
+
+#Delete the files to start a clean run
+remove-item C:\All_Local_Admins\Admins.txt
+remove-item C:\All_Local_Admins\UserCounts.txt
+
+#Loop through each computer and place the Administrators group users into a file
+Foreach ($Computer in $Computers)
+{
+  $Path=$Computer.Path
+  $Name=([ADSI]"$Path").Name
+  write-host $Name
+  $Name | out-file -append C:\All_Local_Admins\Admins.txt
+  $ID = " ID"
+If (Test-Connection -BufferSize 32 -Count 1 -ComputerName $Name -Quiet) {
+  $members =[ADSI]"WinNT://$Name/Administrators"
+  $members = @($members.psbase.Invoke("Members"))
+  $members | foreach {$_.GetType().InvokeMember("Name", 'GetProperty',
+  $null, $_, $null) + $ID | out-file -append C:\All_Local_Admins\Admins.txt
+  } 
+}
+}
+# Process the Admins.txt file and output a count of each username to a new file called UserCounts.txt
+# Ignore these usernames
+$whitelist = "List good admin accounts here"
+
+
+# Initialize the $count HashTable (associative array)
+$count=@{} 
+# Read file, find lines with ÒREG_SZÓ
+$keynames=Get-Content C:\All_Local_Admins\Admins.txt|select-string "ID"
+# Iterate through $keynames one key at a time
+foreach ( $key in $keynames ) {
+  # Remove Ò REG_SZÓ to the end of the line. 
+  # Same as this regex: s/ REG_SZ.*//g 
+  $key=$key -replace " ID", ""
+  # Remove extra spaces
+  $key=$key.trim()
+  # If it’s not whitelisted
+  if (-not ($whitelist -contains $key)){
+    # Increment count for that key by 1
+    $count[$key]++ 
+  }
+}
+# write each key and its count, sorted from highest to lowest into the KeyCounts.txt file
+$count.GetEnumerator() | sort value -Descending | out-file -append C:\All_Local_Admins\UserCounts.txt
