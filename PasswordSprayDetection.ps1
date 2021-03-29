@@ -1,4 +1,4 @@
-﻿<#
+<#
  THIS SCRIPT IS PROVIDED "AS IS" WITH NO WARRANTIES OR GUARANTEES OF ANY
  KIND, INCLUDING BUT NOT LIMITED TO MERCHANTABILITY AND/OR FITNESS FOR A
  PARTICULAR PURPOSE. ALL RISKS OF DAMAGE REMAINS WITH THE USER, EVEN IF THE
@@ -41,7 +41,7 @@
            Regardless of the filename, the output will be a csv file. That is currently the only format allowed.
            Default is the current date to the second, ending with "-Spray.csv"
 
- TimeSlice - The unit to measure the threshold against.  Currently limited to "h" for one hour and "m" for one minute.  
+ TimeSlice - The unit to measure the threshold against.  Currently limited to "h" for hour and "m" for minute.  
              This will count the threshold by 1 minute timeslices or by 1 hour timeslices.
              The default is 1 minute.
  
@@ -49,7 +49,7 @@
   The script can be configured to send an alert email if the threshold is met.  The email includes the outfile as an attachment. 
   This may be useful if setting up a recurring scheduled task.  
 
- SMTPServer - The SMTP server to use for sending an alert email.  
+ SMTPServer - The SMTP server to use for sending an alert email.  If this variable is defined the script attempts to send an alert email. 
  From - The address the alert email should appear to come from.
  To - The destination mailbox for the alert email.
  Subject - The Subject of the alert email.
@@ -123,18 +123,14 @@ $ListSorted = $list | Sort-Object -Property lastbadpasswordattempt,name
 $count=@{} 
 # Add a count for each lastbadpasswordattempt per each minute. The result is a count for each minute in the list.
 $ListSorted | ForEach-Object  { 
-    Write-Host $_.lastbadpasswordattempt
     $_.GetType().lastbadpasswordattempt
     #If timeslice is 1 minute, set datetime format for minutes
     If ($TimeSlice -eq "m"){
-        Write-Host "Timeslice1 = " $TimeSlice
         $DateTime = $_.lastbadpasswordattempt.ToString("MM/dd hh:mm")
     }
     #elseif timeslice is 1 hour, set datetime format for hours
     ElseIf ($TimeSlice -eq "h") {
-        Write-Host "Timeslice = " $TimeSlice
         $DateTime = $_.lastbadpasswordattempt.ToString("MM/dd hh")
-        Write-Host $DateTime
     }
     $count[$DateTime]++
 }
@@ -142,7 +138,7 @@ $ListSorted | ForEach-Object  {
 $TimeCount = $count.GetEnumerator() | sort value -Descending 
 
 #region   If any certificates corresponds to treshold criteria create and email report...
-if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null) {
+if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServer -ne "") {
     $ListSorted | Export-Csv $OutFile
 
     $SMTPMessage = @{
@@ -164,7 +160,7 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null) {
     $Body += ""
     $Body += "Affected Domain: $domain"
     $Body += ""
-    $Body += "This may be indicative of a Brute Force or password spraying attempt against active directory.  Please review the attached information and investigate."
+    $Body += "This may be indicative of a password spraying attempt against active directory.  Please review the attached information and investigate."
     $Body += "ATT&CK Techniques T1110 and T1110.003."
     $Body += "Review the failed logins for the time period on Domain Controller logs to correlate the source of the failed logins."
     $Body += "Query for Event IDs 4625 and 4771 events with failure code=0x18"
@@ -185,7 +181,7 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null) {
     #Cleanup Output File
     Remove-Item $OutFile
 
-} Elseif ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -eq $null) {
+} Elseif ($TimeCount[0].Value -gt $Threshold -and ($SMTPServer -eq $null -or $SMTPServer -eq "")) {
     $ListSorted | Export-Csv $OutFile
     Write-Host "Threshold met.  The top 5 minute with the most failed passwords is below (Name format is Month/Day hh:mm.  Value = Count)."
     Write-Host "Please review the timeslices in the output file at: " $OutFile
@@ -194,7 +190,7 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null) {
     Write-Host $TimeCount[2].Key $TimeCount[2].Value
     Write-Host $TimeCount[3].Key $TimeCount[3].Value
     Write-Host $TimeCount[4].Key $TimeCount[4].Value
-    Write-Host "This may be indicative of a Brute Force or password spraying attempt against active directory."
+    Write-Host "This may be indicative of a password spraying attempt against active directory."
     Write-Host "ATT&CK Techniques T1110 and T1110.003."
     Write-Host "Review the failed logins for the time period on Domain Controller logs to correlate the source of the failed logins."
     Write-Host "Query for Event IDs 4625 and 4771 events with failure code=0x18"
