@@ -136,10 +136,6 @@ $ListSorted | ForEach-Object  {
         $DateTime = $_.lastbadpasswordattempt.ToString("MM/dd hh")
         Write-Host $DateTime
     }
-    Else {
-        Write-Host "Unsupported TimeSlice format. h (hour) or m (minute) are the only allowed options."
-        Exit
-    }
     $count[$DateTime]++
 }
 
