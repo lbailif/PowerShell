@@ -41,7 +41,7 @@
            Regardless of the filename, the output will be a csv file. That is currently the only format allowed.
            Default is the current date to the second, ending with "-Spray.csv"
 
- TimeSlice - The unit to measure the threshold against.  Currently limited to "h" for hour and "m" for minute.  
+ TimeSlice - The unit to measure the threshold against.  Currently limited to "h" for one hour and "m" for one minute.  
              This will count the threshold by 1 minute timeslices or by 1 hour timeslices.
              The default is 1 minute.
  
