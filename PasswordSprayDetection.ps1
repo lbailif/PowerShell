@@ -49,7 +49,7 @@
   The script can be configured to send an alert email if the threshold is met.  The email includes the outfile as an attachment. 
   This may be useful if setting up a recurring scheduled task.  
 
- SMTPServer - The SMTP server to use for sending an alert email.  If this variable is defined the script attempts to send an alert email. 
+ SMTPServer - The SMTP server to use for sending an alert email.  
  From - The address the alert email should appear to come from.
  To - The destination mailbox for the alert email.
  Subject - The Subject of the alert email.
