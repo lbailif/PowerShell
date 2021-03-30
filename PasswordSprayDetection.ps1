@@ -12,8 +12,8 @@
    This script can be ran as a scheduled tasks with email as the notification when a threshold is met.
 
  Requirements: 
- 1. Connectivity to DCs (LDAP ports; I've also seen Active Directory Web Services port TCP/9389 for Get-ADUser) and ICMP. 
- 2. The active directory module for powershell.  
+ 1. Connectivity to DCs (LDAP ports; I've also seen Active Directory Web Services port TCP/9389) and ICMP. 
+ 2. The active directory module for powershell.
  3. Read permissions on user objects in the domain.
 
  Examples:
@@ -26,8 +26,9 @@
 
  .\PasswordSprayDetection.ps1 -History 5 -Threshold 100 -TimeSlice "h"
 
- paramaters:
- Threshold - Sets the threshold for failed login attempts to alert on.  If threshold is not met, the output file will not be created.
+ Paramaters:
+
+ Threshold - Sets the threshold for failed login attempts to alert on.  If threshold is not met, the output file will not be created or email will not be sen.
              Default is 10.
 
  History - How many days back should we query for.  This is used to filter the get-aduser query to limit the results.  
@@ -161,8 +162,8 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServ
     $Body += "Affected Domain: $domain"
     $Body += ""
     $Body += "This may be indicative of a password spraying attempt against active directory.  Please review the attached information and investigate."
-    $Body += "ATT&CK Techniques T1110 and T1110.003."
-    $Body += "Review the failed logins for the time period on Domain Controller logs to correlate the source of the failed logins."
+    $Body += "ATT&CK Technique T1110.003."
+    $Body += "Review the failed logins for the time period on Domain Controller logs to correlate the source of the failed authentications."
     $Body += "Query for Event IDs 4625 and 4771 events with failure code=0x18"
     $Body += ""
     $Body += "The top 5 most failed passwords is listed below."
@@ -178,11 +179,12 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServ
     Send-MailMessage @SMTPMessage -Body $Body -Priority High -Credential $CredObject -UseSsl
 	Write-Host $Body
     
-    #Cleanup Output File
-    Remove-Item $OutFile
+    #Cleanup Output File.  Uncomment the next line if you want to remove the OutFile after the email is sent.
+    #Remove-Item $OutFile
 
 } Elseif ($TimeCount[0].Value -gt $Threshold -and ($SMTPServer -eq $null -or $SMTPServer -eq "")) {
     $ListSorted | Export-Csv $OutFile
+    Write-Host ""
     Write-Host "Threshold met.  The top 5 timeslices with the most failed passwords is below."
     Write-Host "Please review the output file at: " $OutFile
     Write-Host $TimeCount[0].Key $TimeCount[0].Value
@@ -191,7 +193,7 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServ
     Write-Host $TimeCount[3].Key $TimeCount[3].Value
     Write-Host $TimeCount[4].Key $TimeCount[4].Value
     Write-Host "This may be indicative of a password spraying attempt against active directory."
-    Write-Host "ATT&CK Techniques T1110 and T1110.003."
-    Write-Host "Review the failed logins for the time period on Domain Controller logs to correlate the source of the failed logins."
+    Write-Host "ATT&CK Technique T1110.003."
+    Write-Host "Review the failed logins for the time period on Domain Controller logs to correlate the source of the failed authentications."
     Write-Host "Query for Event IDs 4625 and 4771 events with failure code=0x18"
 } Else {write-host "Password spraying threshold was not met."}
