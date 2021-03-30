@@ -49,7 +49,7 @@
   The script can be configured to send an alert email if the threshold is met.  The email includes the outfile as an attachment. 
   This may be useful if setting up a recurring scheduled task.  
 
- SMTPServer - The SMTP server to use for sending an alert email.  If this variable is defined the script attempts to send an alert email. 
+ SMTPServer - The SMTP server to use for sending an alert email.
  From - The address the alert email should appear to come from.
  To - The destination mailbox for the alert email.
  Subject - The Subject of the alert email.
@@ -110,7 +110,7 @@ $DCs = Get-ADDomainController -Filter * -Server $fqdn
 $list = foreach ($Server in $DCs){
     If (Test-Connection -BufferSize 32 -Count 1 -ComputerName $Server.Name -Quiet) {
         write-host "Querying " $Server.Name
-        Get-ADUser -Filter {lastbadpasswordattempt -gt $date} -Properties name,lastbadpasswordattempt,badpwdcount -Server $Server.Name | select name,lastbadpasswordattempt,badpwdcount
+        Get-ADUser -Filter {lastbadpasswordattempt -gt $date} -Properties name,lastbadpasswordattempt,badpwdcount -Server $Server.Name | select name,lastbadpasswordattempt,badpwdcount,{$Server.Name}
     }
     Else {write-host "Skipping Server, Unable to connect to: " $Server.Name}
     }
@@ -156,7 +156,7 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServ
     $Body = @()
     $Body += "Hello,"
     $Body += ""
-    $Body += "The number of active directory failed logins in a 1 minute timeslot exceeded the threshold of $Threshold."
+    $Body += "The number of active directory failed logins in one timeslot exceeded the threshold of $Threshold."
     $Body += ""
     $Body += "Affected Domain: $domain"
     $Body += ""
@@ -165,7 +165,7 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServ
     $Body += "Review the failed logins for the time period on Domain Controller logs to correlate the source of the failed logins."
     $Body += "Query for Event IDs 4625 and 4771 events with failure code=0x18"
     $Body += ""
-    $Body += "The top 5 minute with the most failed passwords is below (Name format is Month/Day hh:mm.  Value = Count)."
+    $Body += "The top 5 most failed passwords is listed below."
     $Body += $TimeCount[0]
     $Body += $TimeCount[1]
     $Body += $TimeCount[2]
@@ -183,8 +183,8 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServ
 
 } Elseif ($TimeCount[0].Value -gt $Threshold -and ($SMTPServer -eq $null -or $SMTPServer -eq "")) {
     $ListSorted | Export-Csv $OutFile
-    Write-Host "Threshold met.  The top 5 minute with the most failed passwords is below (Name format is Month/Day hh:mm.  Value = Count)."
-    Write-Host "Please review the timeslices in the output file at: " $OutFile
+    Write-Host "Threshold met.  The top 5 timeslices with the most failed passwords is below."
+    Write-Host "Please review the output file at: " $OutFile
     Write-Host $TimeCount[0].Key $TimeCount[0].Value
     Write-Host $TimeCount[1].Key $TimeCount[1].Value
     Write-Host $TimeCount[2].Key $TimeCount[2].Value
