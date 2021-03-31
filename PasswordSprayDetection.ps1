@@ -105,8 +105,12 @@ $date=(get-date).AddDays(-$History).ToString("MM/dd/yyyy")
 # For each domain in the forest loop
 foreach($fqdn in $domain)
 {
+write-host "Working on domain: " $fqdn
+
 # get list of DCs and assign to variable
-$DCs = Get-ADDomainController -Filter * -Server $fqdn
+try {$DCs = Get-ADDomainController -Filter * -Server $fqdn}
+catch [Microsoft.ActiveDirectory.Management.ADServerDownException]{write-host "Unable to contact Domain " $fqdn " for Get-ADDomainController"
+Continue}
 # Loop through each DC to request lastbadpasswordattempt
 $list = foreach ($Server in $DCs){
     If (Test-Connection -BufferSize 32 -Count 1 -ComputerName $Server.Name -Quiet) {
@@ -115,7 +119,6 @@ $list = foreach ($Server in $DCs){
     }
     Else {write-host "Skipping Server, Unable to connect to: " $Server.Name}
     }
-}
 
 # Sort the list by lastbadpassword
 $ListSorted = $list | Sort-Object -Property lastbadpasswordattempt,name
@@ -138,6 +141,9 @@ $ListSorted | ForEach-Object  {
 
 $TimeCount = $count.GetEnumerator() | sort value -Descending 
 
+#Check if any results exists in the count array.  Fixes an error when no results are returned for 1 domain
+if ($TimeCount.Matches.Count -gt 0){
+  write-host "count is greter than 1"
 #region   If any certificates corresponds to treshold criteria create and email report...
 if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServer -ne "") {
     $ListSorted | Export-Csv $OutFile
@@ -196,4 +202,6 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServ
     Write-Host "ATT&CK Technique T1110.003."
     Write-Host "Review the failed logins for the time period on Domain Controller logs to correlate the source of the failed authentications."
     Write-Host "Query for Event IDs 4625 and 4771 events with failure code=0x18"
-} Else {write-host "Password spraying threshold was not met."}
+} Else {write-host "Password spraying threshold was not met for this domain."}
+}
+}
