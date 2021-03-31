@@ -142,8 +142,8 @@ $ListSorted | ForEach-Object  {
 $TimeCount = $count.GetEnumerator() | sort value -Descending 
 
 #Check if any results exists in the count array.  Fixes an error when no results are returned for 1 domain
-if ($TimeCount.Matches.Count -gt 0){
-  write-host "count is greter than 1"
+if ($TimeCount -ne $null -and $TimeCount -ne ""){
+  write-host "count is greater than 1"
 #region   If any certificates corresponds to treshold criteria create and email report...
 if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServer -ne "") {
     $ListSorted | Export-Csv $OutFile
