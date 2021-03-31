@@ -73,7 +73,7 @@ param (
 [array] $domain = (get-adforest).domains,
 
 # Set the default output file directory and name
-[string] $OutFile=(get-date -Format "yyyy-MMM-dd-mm-ss") + "-Spray.csv",
+[string] $OutFile=(get-date -Format "yyyy-MMM-dd-mm-ss") +"-Spray.csv",
 
 # Set the default timeslice of 1 minute.  This is used in conjunction with the threshold and defines the period of time in which to count the lastbadpasswordattempts
 [ValidateSet("m", "h")]
@@ -106,6 +106,9 @@ $date=(get-date).AddDays(-$History).ToString("MM/dd/yyyy")
 foreach($fqdn in $domain)
 {
 write-host "Working on domain: " $fqdn
+if((Test-Path $OutFile) -eq 1) {
+  $OutFile = "1_" + $OutFile
+}
 
 # get list of DCs and assign to variable
 try {$DCs = Get-ADDomainController -Filter * -Server $fqdn}
