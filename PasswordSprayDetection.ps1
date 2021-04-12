@@ -168,7 +168,7 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServ
     $Body += ""
     $Body += "The number of active directory failed logins in one timeslot exceeded the threshold of $Threshold."
     $Body += ""
-    $Body += "Affected Domain: $domain"
+    $Body += "Affected Domain: $fqdn"
     $Body += ""
     $Body += "This may be indicative of a password spraying attempt against active directory.  Please review the attached information and investigate."
     $Body += "ATT&CK Technique T1110.003."
@@ -195,7 +195,11 @@ if ($TimeCount[0].Value -gt $Threshold -and $SMTPServer -ne $null -and $SMTPServ
     $ListSorted | Export-Csv $OutFile
     Write-Host ""
     Write-Host "Threshold met.  The top 5 timeslices with the most failed passwords is below."
+    Write-Host ""
+    Write-Host "Affected Domain: $fqdn"
+    Write-Host ""
     Write-Host "Please review the output file at: " $OutFile
+    Write-Host ""
     Write-Host $TimeCount[0].Key $TimeCount[0].Value
     Write-Host $TimeCount[1].Key $TimeCount[1].Value
     Write-Host $TimeCount[2].Key $TimeCount[2].Value
