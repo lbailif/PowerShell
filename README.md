@@ -6,4 +6,6 @@ PasswordSprayDetection.ps1
 
 AzureADGetPasswordsInComments
 - Connects to Azure AD and searches user account attributes for the string 'password'
-- 
+
+ADGetPasswordsInProperties
+- Connects to on-prem AD and searches user account attributes for the string 'password'
