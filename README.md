@@ -9,3 +9,6 @@ AzureADGetPasswordsInComments
 
 ADGetPasswordsInProperties
 - Connects to on-prem AD and searches user account attributes for the string 'password'
+
+DisableNetBiosOverTcpIp.ps1
+- Disables NBNS by changing the setting on each active NIC that the script identifies.  Recommend running on a regular schedule in SCCM to pick up on any new NICs added to systems.
